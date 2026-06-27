@@ -3,7 +3,6 @@ import {
   BarChart3,
   Bell,
   CalendarDays,
-  Download,
   FileSpreadsheet,
   Home,
   LogOut,
@@ -78,16 +77,16 @@ function getRangeLabel(rangeType, rangeCount) {
   return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 }
 
-function exportToCsv(rows) {
-  const header = ["Symbol","Company","Hi-avg","Lo-avg","Diff","Intraday Range","Avg Volume","ICICI INVEST"];
-  const lines = rows.map((s) => [s.symbol,s.company,s.highAvg,s.lowAvg,s.diff,s.intradayRange,s.avgVolume,s.iciciInvest].join(","));
-  const csv = [header.join(","), ...lines].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "gift_city_stocks.csv"; a.click();
-  URL.revokeObjectURL(url);
-}
+// function exportToCsv(rows) {
+//   const header = ["Symbol","Company","Hi-avg","Lo-avg","Diff","Intraday Range","Avg Volume","ICICI INVEST"];
+//   const lines = rows.map((s) => [s.symbol,s.company,s.highAvg,s.lowAvg,s.diff,s.intradayRange,s.avgVolume,s.iciciInvest].join(","));
+//   const csv = [header.join(","), ...lines].join("\n");
+//   const blob = new Blob([csv], { type: "text/csv" });
+//   const url = URL.createObjectURL(blob);
+//   const a = document.createElement("a");
+//   a.href = url; a.download = "gift_city_stocks.csv"; a.click();
+//   URL.revokeObjectURL(url);
+// }
 
 // ── Page router ───────────────────────────────────────────────────────────────
 function PageContent({ pageKey }) {

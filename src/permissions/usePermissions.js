@@ -2,9 +2,6 @@ import { useMemo } from "react";
 import { useAuth } from "../state/AuthContext.jsx";
 import {
   getPermissionsForRole,
-  roleHasPermission,
-  roleHasAllPermissions,
-  roleHasAnyPermission,
 } from "./permissions.js";
 
 /**

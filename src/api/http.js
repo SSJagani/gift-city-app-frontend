@@ -26,6 +26,17 @@ function writeStoredAuth(nextAuth, remember = true) {
   }
 }
 
+function normalizeAuthPayload(payload) {
+  if (!payload) return null;
+
+  const data = payload.data ?? payload;
+  const user = payload.user ?? data.user ?? null;
+  const tokenSource = data.tokens ?? data;
+  const { user: _user, ...tokens } = tokenSource;
+
+  return { tokens, user };
+}
+
 async function parseResponse(response) {
   const contentType = response.headers.get("content-type") || "";
   const body = contentType.includes("application/json") ? await response.json() : null;
@@ -68,7 +79,7 @@ async function refreshTokens() {
       body: JSON.stringify({ refresh_token: authCache.tokens.refresh_token }),
     })
       .then((payload) => {
-        const nextAuth = { tokens: payload.data, user: payload.user };
+        const nextAuth = normalizeAuthPayload(payload);
         writeStoredAuth(nextAuth);
         return nextAuth;
       })
@@ -157,7 +168,7 @@ export const authApi = {
     });
   },
   async me() {
-    return apiRequest("/users/me");
+    return apiRequest("/auth/me");
   },
 };
 
@@ -169,5 +180,31 @@ export const stocksApi = {
       stock_count: String(stockCount),
     });
     return apiRequest(`/stocks/top?${params.toString()}`);
+  },
+};
+
+export const brokerSettingsApi = {
+  async list() {
+    return apiRequest("/broker-settings/");
+  },
+  async detail(id) {
+    return apiRequest(`/broker-settings/${id}/`);
+  },
+  async create(configuration) {
+    return apiRequest("/broker-settings/", {
+      method: "POST",
+      body: JSON.stringify(configuration),
+    });
+  },
+  async update(id, configuration) {
+    return apiRequest(`/broker-settings/${id}/`, {
+      method: "PUT",
+      body: JSON.stringify(configuration),
+    });
+  },
+  async remove(id) {
+    return apiRequest(`/broker-settings/${id}/`, {
+      method: "DELETE",
+    });
   },
 };

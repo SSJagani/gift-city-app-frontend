@@ -2,13 +2,46 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { authApi, getStoredAuth, setStoredAuth } from "../api/http.js";
 
 const AuthContext = createContext(null);
+let loadMePromise = null;
+
+function getUserFromResponse(response) {
+  return response?.user ?? response?.data?.user ?? response?.data ?? response ?? null;
+}
+
+function normalizeAuthPayload(payload) {
+  if (!payload) return null;
+
+  const data = payload.data ?? payload;
+  const user = payload.user ?? data.user ?? null;
+  const tokenSource = data.tokens ?? data;
+  const { user: _user, ...tokens } = tokenSource;
+
+  return { tokens, user };
+}
+
+function loadCurrentUser() {
+  if (!loadMePromise) {
+    loadMePromise = authApi.me()
+      .then(getUserFromResponse)
+      .finally(() => {
+        loadMePromise = null;
+      });
+  }
+
+  return loadMePromise;
+}
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(() => getStoredAuth());
   const [booting, setBooting] = useState(true);
 
-  const persistAuth = useCallback((payload, options = {}) => {
-    const nextAuth = payload ? { tokens: payload.data, user: payload.user } : null;
+  const persistAuth = useCallback(async (payload, options = {}) => {
+    let nextAuth = normalizeAuthPayload(payload);
+
+    if (nextAuth?.tokens?.access_token && !nextAuth.user) {
+      nextAuth = { ...nextAuth, user: await loadCurrentUser() };
+    }
+
     setStoredAuth(nextAuth, options);
     setAuth(nextAuth);
     return nextAuth;
@@ -24,7 +57,7 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const user = await authApi.me();
+        const user = await loadCurrentUser();
         if (active) {
           const current = getStoredAuth();
           const nextAuth = { ...current, user };

@@ -35,3 +35,6 @@ coverage/
 *.log
 
 package-lock.json
+
+graphify-out/
+.codex
